@@ -2,3 +2,5 @@
 *.c
 *.so
 /build/*
+/__pycache__/*
+/pysbf/__pycache__/*
