@@ -3,7 +3,6 @@ from sbf_satellite import Satellite
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import dates as md
-from numpy import arange, sin, pi
 from PyQt5 import QtCore, QtWidgets
 import sys
 import os
@@ -41,6 +40,7 @@ class MyDynamicMplCanvas(MyMplCanvas):
         MyMplCanvas.__init__(self, *args, **kwargs)
 
     def compute_initial_figure(self, satellite, band):
+        self.axes.xaxis_date()
         for sig_num in satellite.signals:
             for sat in satellite.signals[sig_num]:
                 if satellite.sig_num_ref[sig_num]["band"] == band:
