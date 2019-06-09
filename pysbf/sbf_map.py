@@ -1,3 +1,5 @@
+#L1: 1575.42 MHz, L2: 1227.60 MHz, L3: 1381.05 MHz, L5: 1176.45 MHz
+#From AsteRx-m2 reference guide table 4.1.10
 sig_num_ref = {
     0: {"sig_type": "L1CA", "constellation": "GPS", "band": 1},
     1: {"sig_type": "L1P", "constellation": "GPS", "band": 1},
@@ -11,25 +13,25 @@ sig_num_ref = {
     9: {"sig_type": "L1P", "constellation": "GLONASS", "band": 1},
     10: {"sig_type": "L2P", "constellation": "GLONASS", "band": 2},
     11: {"sig_type": "L2CA", "constellation": "GLONASS", "band": 2},
-    12: {"sig_type": "L3", "constellation": "GLONASS", "band": 2},
+    12: {"sig_type": "L3", "constellation": "GLONASS", "band": 3},
     13: {"sig_type": "Reserved", "constellation": "", "band": 0},
     14: {"sig_type": "Reserved", "constellation": "", "band": 0},
     15: {"sig_type": "L5", "constellation": "IRNSS", "band": 5},
     16: {"sig_type": "Reserved", "constellation": "", "band": 0},
     17: {"sig_type": "E1 (L1BC)", "constellation": "Galileo", "band": 1},
     18: {"sig_type": "Reserved", "constellation": "", "band": 0},
-    19: {"sig_type": "E6 (E6BC)", "constellation": "Galileo", "band": 2},
+    19: {"sig_type": "E6 (E6BC)", "constellation": "Galileo", "band": 6},
     20: {"sig_type": "E5a", "constellation": "Galileo", "band": 5},
-    21: {"sig_type": "E5b", "constellation": "Galileo", "band": 5},
-    22: {"sig_type": "E5 AltBoc", "constellation": "Galileo", "band": 5},
+    21: {"sig_type": "E5b", "constellation": "Galileo", "band": 7},
+    22: {"sig_type": "E5 AltBoc", "constellation": "Galileo", "band": 8},
     23: {"sig_type": "LBand", "constellation": "MSS", "band": 0},
     24: {"sig_type": "L1CA", "constellation": "SBAS", "band": 1},
     25: {"sig_type": "L5", "constellation": "SBAS", "band": 5},
     26: {"sig_type": "L5", "constellation": "QZSS", "band": 5},
     27: {"sig_type": "Reserved", "constellation": "", "band": 0},
     28: {"sig_type": "B1", "constellation": "BeiDou", "band": 1},
-    29: {"sig_type": "B2", "constellation": "BeiDou", "band": 2},
-    30: {"sig_type": "B3", "constellation": "BeiDou", "band": 2},
+    29: {"sig_type": "B2", "constellation": "BeiDou", "band": 7},
+    30: {"sig_type": "B3", "constellation": "BeiDou", "band": 6},
     31: {"sig_type": "Reserved", "constellation": "", "band": 0}
 }
 

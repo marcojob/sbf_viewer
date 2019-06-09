@@ -18,7 +18,8 @@ def main():
                         default='')
     args = parser.parse_args()
 
-    run_GUI(args.sbf_file)
+    satellite = Satellite(args.sbf_file)
+    run_GUI(satellite)
 
 
 if __name__ == "__main__":
