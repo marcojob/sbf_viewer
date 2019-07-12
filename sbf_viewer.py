@@ -5,8 +5,8 @@ __license__ = 'GPL'
 
 from argparse import ArgumentParser
 
-from sbf_gui import run_GUI
-from sbf_satellite import Satellite
+from src.sbf_gui import run_GUI
+from src.sbf_satellite import Satellite
 
 
 def main():
@@ -16,6 +16,9 @@ def main():
                         help='Path to .sbf file to open',
                         type=str,
                         default='')
+    parser.add_argument('--batch_processing', '-b',
+                        help='Path to directory on which to perform batch processing. If given, overrides any GUI commands',
+                        type=str)
     args = parser.parse_args()
 
     satellite = Satellite(args.sbf_file)

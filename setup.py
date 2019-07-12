@@ -3,14 +3,14 @@ from Cython.Distutils import build_ext
 
 def Main(cythonize=False):
     ext_modules = [
-        Extension('pysbf.sbf', ['pysbf/sbf.pyx', 'pysbf/c_crc.c']),
-        Extension('pysbf.blocks', ['pysbf/blocks.py']),
-        Extension('pysbf.parsers', ['pysbf/parsers.pyx'])
+        Extension('pysbf.sbf', ['src/pysbf/sbf.pyx', 'src/pysbf/c_crc.c']),
+        Extension('pysbf.blocks', ['src/pysbf/blocks.py']),
+        Extension('pysbf.parsers', ['src/pysbf/parsers.pyx'])
     ]
     cmdclass = {'build_ext': build_ext}
 
     setup(name='pysbf',
-        packages = ['pysbf'],
+        packages = ['src/pysbf'],
         cmdclass = cmdclass,
         ext_modules = ext_modules
     )

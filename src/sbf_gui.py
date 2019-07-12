@@ -1,5 +1,5 @@
 from __future__ import unicode_literals
-from sbf_satellite import Satellite
+from .sbf_satellite import Satellite
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib import dates as md

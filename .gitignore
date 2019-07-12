@@ -1,5 +1,6 @@
 # Cython build files
 *.c
+*.pyc
 *.so
 /build/*
 /__pycache__/*
