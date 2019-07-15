@@ -5,8 +5,10 @@ __license__ = 'GPL'
 
 from argparse import ArgumentParser
 
-from src.sbf_gui import run_GUI
-from src.sbf_satellite import Satellite
+from src.gui import run_GUI
+from src.satellite import Satellite
+
+import time
 
 
 def main():
@@ -21,8 +23,12 @@ def main():
                         type=str)
     args = parser.parse_args()
 
+    starttime = time.time()
     satellite = Satellite(args.sbf_file)
+    print('Loaded file in {:.2f} s'.format(time.time()-starttime))
+    starttime = time.time()
     run_GUI(satellite)
+    print('Plotted file in {}'.format(time.time()-starttime))
 
 
 if __name__ == "__main__":
