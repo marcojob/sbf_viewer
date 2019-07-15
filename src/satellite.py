@@ -5,25 +5,22 @@ from pathlib import Path
 from numpy import mean
 import pandas as pd
 
+DEFAULT_VALUE = 'N/A'
+MIN_LENGTH = 7
+
 
 class Satellite:
     def __init__(self, sbf_file):
-        DEF_VAL = 'N/A'
         self.sbf_file = sbf_file
         self.signals = {}
-        self.events = {
-            'tow': []
-        }
-        self.dict_df_1 = dict()
-        self.dict_df_2 = dict()
-        self.means_1 = list()
-        self.means_2 = list()
-        self.mean_summary_1 = {'max': DEF_VAL, 'val': DEF_VAL, 'len': DEF_VAL, 'top': DEF_VAL, 'low': DEF_VAL}
-        self.mean_summary_2 = {'max': DEF_VAL, 'val': DEF_VAL, 'len': DEF_VAL, 'top': DEF_VAL, 'low': DEF_VAL}
+        self.events = {'tow': list()}
+        self.dict_df = {'1': dict(), '2': dict()}
+        self.means = {'1': list(), '2': list()}
         self.sig_num_ref = pysbf.sig_num_ref
         self.load_file(sbf_file)
         self.to_dict_df()
-        self.get_means()
+        self.update_sorted_mean_list(band='1')
+        self.update_sorted_mean_list(band='2')
 
     def load_file(self, sbf_file):
         sbf_file = Path(sbf_file)
@@ -62,64 +59,26 @@ class Satellite:
         for num in self.signals:
             if self.sig_num_ref[num]['band'] == 1 and self.sig_num_ref[num]['en'] == True:
                 for sat in self.signals[num]:
-                    self.dict_df_1[sat] = pd.DataFrame(data=self.signals[num][sat]['snr'],
-                                                       index=self.signals[num][sat]['tow'])
+                    self.dict_df['1'][sat] = pd.DataFrame(data=self.signals[num][sat]['snr'],
+                                                          index=self.signals[num][sat]['tow'])
             elif self.sig_num_ref[num]['band'] == 2 and self.sig_num_ref[num]['en'] == True:
                 for sat in self.signals[num]:
-                    self.dict_df_2[sat] = pd.DataFrame(data=self.signals[num][sat]['snr'],
-                                                       index=self.signals[num][sat]['tow'])
+                    self.dict_df['2'][sat] = pd.DataFrame(data=self.signals[num][sat]['snr'],
+                                                          index=self.signals[num][sat]['tow'])
 
-    def get_means(self):
-        LEN_MIN = 7
-        L1_TOP_MIN = 45
-        L1_LOW_MIN = 40
-        L2_TOP_MIN = 35
-        L2_LOW_MIN = 30
+    def update_sorted_mean_list(self, band):
         if self.events['tow'] == list():
-            for sat in self.dict_df_1:
-                values = self.dict_df_1.get(sat, pd.Series())
+            for sat in self.dict_df[band]:
+                values = self.dict_df[band].get(sat, pd.Series())
                 if values.empty:
-                    self.means_1.append(0.0)
+                    self.means[band].append(0.0)
                 else:
                     value = values.mean()
-                    self.means_1.append(value[0])
-            for sat in self.dict_df_2:
-                values = self.dict_df_1.get(sat, pd.Series())
-                if values.empty:
-                    self.means_2.append(0.0)
-                else:
-                    value = values.mean()
-                    self.means_2.append(value[0])
+                    self.means[band].append(value[0])
         else:
-            for sat in self.dict_df_1:
-                self.means_1.append(self.get_event_mean(self.dict_df_1[sat], self.events))
-            for sat in self.dict_df_2:
-                self.means_2.append(self.get_event_mean(self.dict_df_2[sat], self.events))
-        self.means_1.sort(reverse=True)
-        self.means_2.sort(reverse=True)
-
-        if not self.means_1 == list():
-            self.mean_summary_1['max'] = self.means_1[0]
-            if len(self.means_1) < LEN_MIN:
-                self.mean_summary_1['val'] = mean(self.means_1)
-                self.mean_summary_1['len'] = len(self.means_1)
-            else:
-                self.mean_summary_1['val'] = mean(self.means_1[:LEN_MIN])
-                self.mean_summary_1['len'] = LEN_MIN
-            self.mean_summary_1['top'] = self.count_condition(self.means_1, L1_TOP_MIN)
-            self.mean_summary_1['low'] = self.count_condition(self.means_1, L1_LOW_MIN)
-
-
-        if not self.means_2 == list():
-            self.mean_summary_2['max'] = self.means_2[0]
-            if len(self.means_2) < LEN_MIN:
-                self.mean_summary_2['val'] = mean(self.means_2)
-                self.mean_summary_2['len'] = len(self.means_2)
-            else:
-                self.mean_summary_2['val'] = mean(self.means_2[:LEN_MIN])
-                self.mean_summary_2['len'] = LEN_MIN
-            self.mean_summary_2['top'] = self.count_condition(self.means_2, L1_TOP_MIN)
-            self.mean_summary_2['low'] = self.count_condition(self.means_2, L1_LOW_MIN)
+            for sat in self.dict_df[band]:
+                self.means[band].append(self.get_event_mean(self.dict_df[band][sat], self.events))
+        self.means[band].sort(reverse=True)
 
     def get_event_mean(self, sat, events):
         mean_list = list()
@@ -134,7 +93,16 @@ class Satellite:
         else:
             return 0
 
-    def count_condition(self, means, threshold):
+    def get_max_mean(self, band):
+        if self.means[band] == list():
+            return DEFAULT_VALUE
+        return self.means[band][0]
+
+    def get_top_mean(self, band):
+        length = MIN_LENGTH if len(self.means[band]) > MIN_LENGTH else len(self.means[band])
+        return length, mean(self.means[band][:length])
+
+    def get_n_thresh(self, means, threshold):
         return sum(i >= threshold for i in means)
 
     def update_events(self, tow, wnc):

@@ -15,17 +15,17 @@ import calendar
 matplotlib.use('Qt5Agg')
 
 
-class MyMplCanvas(FigureCanvas):
+class MplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
 
-    def __init__(self, parent, dict_df, events, means, width, height, dpi):
+    def __init__(self, parent, sat, band, width, height, dpi):
         self.datetimeformat = "%Y-%m-%d %H:%M:%S.%f"
         self.epoch = datetime.datetime.strptime("1980-01-06 00:00:00.000", self.datetimeformat)
 
         self.fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = self.fig.add_subplot(111)
 
-        self.compute_initial_figure(dict_df, events, means)
+        self.compute_initial_figure(sat, band)
 
         FigureCanvas.__init__(self, self.fig)
         self.setParent(parent)
@@ -35,21 +35,22 @@ class MyMplCanvas(FigureCanvas):
                                    QtWidgets.QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
-    def compute_initial_figure(self, dict_df, events):
+    def compute_initial_figure(self, sat, band):
         pass
 
 
-class MyDynamicMplCanvas(MyMplCanvas):
+class DynamicMplCanvas(MplCanvas):
     """A canvas that updates itself every second with a new plot."""
 
     def __init__(self, *args, **kwargs):
-        MyMplCanvas.__init__(self, *args, **kwargs)
+        MplCanvas.__init__(self, *args, **kwargs)
 
-    def compute_initial_figure(self, dict_df, events, means):
+    def compute_initial_figure(self, sat, band):
         self.axes.xaxis_date()
-        for sat in dict_df:
-            self.axes.plot_date(self.get_time(1, dict_df[sat].index),
-                                dict_df[sat],
+        dict_df = sat.dict_df[band]
+        for key in dict_df:
+            self.axes.plot_date(self.get_time(1, dict_df[key].index),
+                                dict_df[key],
                                 '.',
                                 markersize=4.5)
 
@@ -57,21 +58,24 @@ class MyDynamicMplCanvas(MyMplCanvas):
         self.axes.set_ylabel("SNR [dB-Hz]")
         self.fig.autofmt_xdate()
 
-        self.show_events(events)
-        self.show_mean(means)
+        self.show_events(sat.events)
+        self.show_mean(sat, band)
 
     def show_events(self, events):
         for trig in events['tow']:
             self.axes.axvline(x=self.get_time_s(1, trig), color='k', linewidth=0.5, alpha=0.3)
 
-    def show_mean(self, means):
+    def show_mean(self, sat, band):
         axes_xlim_r = self.axes.get_xlim()
-        self.axes.axhline(y=means['val'], color='k', linewidth=1.0, linestyle='dashed', alpha=0.7)
-        self.axes.axhline(y=means['max'], color='k', linewidth=1.0, linestyle='dashed', alpha=0.7)
+        len_val, val = sat.get_top_mean(band)
+        max_val = sat.get_max_mean(band)
+        self.axes.axhline(y=val, color='k', linewidth=1.0, linestyle='dashed', alpha=0.7)
+        self.axes.axhline(y=max_val, color='k', linewidth=1.0, linestyle='dashed', alpha=0.7)
         self.axes.set_title("Max: {:.2f}, mean of top {} sats: {:.2f}".format(
-            means['max'], means['len'], means['val']), fontsize=10)
+            max_val, len_val, val), fontsize=10)
 
-    def update_figure(self, dict_df):
+    def update_figure(self, sat, band):
+        dict_df = sat.dict_df[band]
         self.axes.cla()
         self.axes.xaxis_date()
         for sat in dict_df:
@@ -101,12 +105,6 @@ class MyDynamicMplCanvas(MyMplCanvas):
 class ApplicationWindow(QtWidgets.QMainWindow):
     def __init__(self, satellite):
         self.satellite = satellite
-        self.dict_df_1 = self.satellite.dict_df_1
-        self.dict_df_2 = self.satellite.dict_df_2
-        self.mean_summary_1 = self.satellite.mean_summary_1
-        self.mean_summary_2 = self.satellite.mean_summary_2
-        self.events = self.satellite.events
-
         self.enable_events = True
         self.enable_mean = True
 
@@ -141,8 +139,8 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.main_widget = QtWidgets.QWidget(self)
 
         l = QtWidgets.QVBoxLayout(self.main_widget)
-        self.top_plot = MyDynamicMplCanvas(self.main_widget, self.dict_df_1, self.events, self.mean_summary_1, width=5, height=4, dpi=100)
-        self.bot_plot = MyDynamicMplCanvas(self.main_widget, self.dict_df_2, self.events, self.mean_summary_2, width=5, height=4, dpi=100)
+        self.top_plot = DynamicMplCanvas(self.main_widget, self.satellite, '1', width=5, height=4, dpi=100)
+        self.bot_plot = DynamicMplCanvas(self.main_widget, self.satellite, '2', width=5, height=4, dpi=100)
         l.addWidget(self.top_plot)
         l.addWidget(self.bot_plot)
 
@@ -161,8 +159,7 @@ class ApplicationWindow(QtWidgets.QMainWindow):
     def load_file(self):
         filename = self.openFileNameDialog()
         self.satellite.load_file(filename)
-        self.dict_df_1 = self.satellite.dict_df_1
-        self.dict_df_2 = self.satellite.dict_df_2
+        self.dict_df = self.satellite.dict_df
         self.events = self.satellite.events
         print("Loaded new file {}".format(filename))
 
@@ -186,16 +183,16 @@ class ApplicationWindow(QtWidgets.QMainWindow):
         self.update_view()
 
     def update_view(self):
-        self.top_plot.update_figure(self.dict_df_1)
-        self.bot_plot.update_figure(self.dict_df_2)
+        self.top_plot.update_figure(self.satellite, '1')
+        self.bot_plot.update_figure(self.satellite, '2')
 
         if self.enable_mean:
-            self.top_plot.show_mean(self.mean_summary_1)
-            self.bot_plot.show_mean(self.mean_summary_2)
+            self.top_plot.show_mean(self.satellite, '1')
+            self.bot_plot.show_mean(self.satellite, '2')
 
         if self.enable_events:
-            self.top_plot.show_events(self.events)
-            self.bot_plot.show_events(self.events)
+            self.top_plot.show_events(self.satellite.events)
+            self.bot_plot.show_events(self.satellite.events)
 
         self.top_plot.draw()
         self.bot_plot.draw()
@@ -210,7 +207,6 @@ class ApplicationWindow(QtWidgets.QMainWindow):
 
 def run_GUI(satellite):
     qApp = QtWidgets.QApplication(sys.argv)
-
     aw = ApplicationWindow(satellite)
     aw.setWindowTitle("sbf viewer")
     aw.show()

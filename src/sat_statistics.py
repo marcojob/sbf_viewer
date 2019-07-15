@@ -8,8 +8,6 @@ def run(directory):
     files = log_files(current_directory)
     for file in files:
         satellite = Satellite(file)
-        print(satellite.mean_summary_1)
-        print(satellite.mean_summary_2)
 
 def log_files(directory):
     extensions = ['*.sbf']
