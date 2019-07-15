@@ -5,8 +5,10 @@ from pathlib import Path
 from numpy import mean
 import pandas as pd
 
+
 class Satellite:
     def __init__(self, sbf_file):
+        DEF_VAL = 'N/A'
         self.sbf_file = sbf_file
         self.signals = {}
         self.events = {
@@ -16,8 +18,8 @@ class Satellite:
         self.dict_df_2 = dict()
         self.means_1 = list()
         self.means_2 = list()
-        self.mean_summary_1 = dict()
-        self.mean_summary_2 = dict()
+        self.mean_summary_1 = {'max': DEF_VAL, 'val': DEF_VAL, 'len': DEF_VAL, 'top': DEF_VAL, 'low': DEF_VAL}
+        self.mean_summary_2 = {'max': DEF_VAL, 'val': DEF_VAL, 'len': DEF_VAL, 'top': DEF_VAL, 'low': DEF_VAL}
         self.sig_num_ref = pysbf.sig_num_ref
         self.load_file(sbf_file)
         self.to_dict_df()
@@ -69,13 +71,25 @@ class Satellite:
 
     def get_means(self):
         LEN_MIN = 7
+        L1_TOP_MIN = 45
+        L1_LOW_MIN = 40
+        L2_TOP_MIN = 35
+        L2_LOW_MIN = 30
         if self.events['tow'] == list():
             for sat in self.dict_df_1:
-                value = self.dict_df_1[sat].mean()
-                self.means_1.append(value[0])
+                values = self.dict_df_1.get(sat, pd.Series())
+                if values.empty:
+                    self.means_1.append(0.0)
+                else:
+                    value = values.mean()
+                    self.means_1.append(value[0])
             for sat in self.dict_df_2:
-                value = self.dict_df_1[sat].mean()
-                self.means_2.append(value[0])
+                values = self.dict_df_1.get(sat, pd.Series())
+                if values.empty:
+                    self.means_2.append(0.0)
+                else:
+                    value = values.mean()
+                    self.means_2.append(value[0])
         else:
             for sat in self.dict_df_1:
                 self.means_1.append(self.get_event_mean(self.dict_df_1[sat], self.events))
@@ -84,22 +98,28 @@ class Satellite:
         self.means_1.sort(reverse=True)
         self.means_2.sort(reverse=True)
 
-        self.mean_summary_1['max'] = self.means_1[0]
-        self.mean_summary_2['max'] = self.means_2[0]
+        if not self.means_1 == list():
+            self.mean_summary_1['max'] = self.means_1[0]
+            if len(self.means_1) < LEN_MIN:
+                self.mean_summary_1['val'] = mean(self.means_1)
+                self.mean_summary_1['len'] = len(self.means_1)
+            else:
+                self.mean_summary_1['val'] = mean(self.means_1[:LEN_MIN])
+                self.mean_summary_1['len'] = LEN_MIN
+            self.mean_summary_1['top'] = self.count_condition(self.means_1, L1_TOP_MIN)
+            self.mean_summary_1['low'] = self.count_condition(self.means_1, L1_LOW_MIN)
 
-        if len(self.means_1) < LEN_MIN:
-            self.mean_summary_1['val'] = mean(self.means_1)
-            self.mean_summary_1['len'] = len(self.means_1)
-        else:
-            self.mean_summary_1['val'] = mean(self.means_1[:LEN_MIN])
-            self.mean_summary_1['len'] = LEN_MIN
 
-        if len(self.means_2) < LEN_MIN:
-            self.mean_summary_2['val'] = mean(self.means_2)
-            self.mean_summary_2['len'] = len(self.means_2)
-        else:
-            self.mean_summary_2['val'] = mean(self.means_2[:LEN_MIN])
-            self.mean_summary_2['len'] = LEN_MIN
+        if not self.means_2 == list():
+            self.mean_summary_2['max'] = self.means_2[0]
+            if len(self.means_2) < LEN_MIN:
+                self.mean_summary_2['val'] = mean(self.means_2)
+                self.mean_summary_2['len'] = len(self.means_2)
+            else:
+                self.mean_summary_2['val'] = mean(self.means_2[:LEN_MIN])
+                self.mean_summary_2['len'] = LEN_MIN
+            self.mean_summary_2['top'] = self.count_condition(self.means_2, L1_TOP_MIN)
+            self.mean_summary_2['low'] = self.count_condition(self.means_2, L1_LOW_MIN)
 
     def get_event_mean(self, sat, events):
         mean_list = list()
@@ -114,7 +134,8 @@ class Satellite:
         else:
             return 0
 
-
+    def count_condition(self, means, threshold):
+        return sum(i >= threshold for i in means)
 
     def update_events(self, tow, wnc):
         self.events['tow'].append(tow)
