@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 import pandas as pd
 
+
 class Satellite:
     def __init__(self, sbf_file):
         self.signals = {}
@@ -20,10 +21,15 @@ class Satellite:
         if sbf_file.is_file():
             with sbf_file.open() as sbf_fobj:
                 for blockName, block in pysbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent'}):
+                    import pdb
                     if blockName == 'MeasEpoch_v2':
                         for meas in block['Type_1']:
                             self.update_signals(block['TOW'], block['WNc'], meas['SVID'],
                                                 meas['Type'], meas['CN0'], meas['LockTime'])
+                            for nested_entry in meas['Type_2']:
+                                self.update_signals(block['TOW'], block['WNc'], meas['SVID'],
+                                                    nested_entry['Type'], nested_entry['CN0'], nested_entry['LockTime'])
+
                     elif blockName == 'ExtEvent':
                         self.update_events(block['TOW'], block['WNc'])
 
@@ -31,17 +37,14 @@ class Satellite:
 
     def to_dict_df(self):
         for num in self.signals:
-            print(self.sig_num_ref[num])
-            if self.sig_num_ref[num]['band'] == 1:
+            if self.sig_num_ref[num]['band'] == 1 and self.sig_num_ref[num]['en'] == True:
                 for sat in self.signals[num]:
-                    print(sat)
-                    self.dict_df_1[sat] = pd.DataFrame(data=self.signals[num][sat]['snr'], 
-                                                  index=self.signals[num][sat]['tow'])
-            elif self.sig_num_ref[num]['band'] == 2:
+                    self.dict_df_1[sat] = pd.DataFrame(data=self.signals[num][sat]['snr'],
+                                                       index=self.signals[num][sat]['tow'])
+            elif self.sig_num_ref[num]['band'] == 2 and self.sig_num_ref[num]['en'] == True:
                 for sat in self.signals[num]:
-                    print(sat)
                     self.dict_df_2[sat] = pd.DataFrame(data=self.signals[num][sat]['snr'],
-                                                  index=self.signals[num][sat]['tow'])
+                                                       index=self.signals[num][sat]['tow'])
 
     def update_signals(self, tow, wnc, svid, sig_type, cn0, locktime):
         sig_num = self.get_band(sig_type)
@@ -66,7 +69,10 @@ class Satellite:
         return sig_type & 0b00011111
 
     def get_snr(self, cn0, sig_num):
-        return cn0*0.25 if sig_num == 1 or sig_num == 2 else cn0*0.25+10.0
+        if sig_num == 1 or sig_num == 2:
+            return cn0*0.25
+        else:
+            return cn0*0.25+10.0
 
     def get_svid(self, svid):
         '''Table 4.1.9'''

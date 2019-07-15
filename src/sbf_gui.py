@@ -90,7 +90,7 @@ class MyDynamicMplCanvas(MyMplCanvas):
         axes_xlim_r = self.axes.get_xlim()
         self.axes.axhline(y=mean_val, color='k', linewidth=1.0, linestyle='dashed', alpha=0.7)
         self.axes.axhline(y=max(mean_avg), color='k', linewidth=1.0, linestyle='dashed', alpha=0.7)
-        self.axes.set_title("Max: {:.2f}, mean ({} sats): {:.2f}".format(max(mean_avg), mean_len, mean_val), fontsize=10)
+        self.axes.set_title("Max: {:.2f}, mean of top {} sats): {:.2f}".format(max(mean_avg), mean_len, mean_val), fontsize=10)
 
 
     def update_figure(self, dict_df):
