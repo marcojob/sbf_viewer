@@ -1,13 +1,21 @@
 import logging
 
+import pandas as pd
+
 from pathlib import Path
 from .satellite import Satellite
 
 def run(directory):
+    satellite = Satellite()
     current_directory = get_valid_directory(directory)
-    files = log_files(current_directory)
-    for file in files:
-        satellite = Satellite(file)
+    data = pd.DataFrame()
+    for file in log_files(current_directory):
+        print('Processing {}'.format(str(file)))
+        satellite.load_file(file)
+        idx, values = satellite.check()
+        data = data.append(pd.DataFrame(data=values, index=[idx]))
+    csv_file = current_directory / Path('ppk_quality_output.csv')
+    data.to_csv(csv_file)
 
 def log_files(directory):
     extensions = ['*.sbf']

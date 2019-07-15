@@ -7,25 +7,26 @@ import pandas as pd
 
 DEFAULT_VALUE = 'N/A'
 MIN_LENGTH = 7
+BEST_L1 = 45
+GOOD_L1 = 42
+BEST_L2 = 36
+GOOD_L2 = 30
 
 
 class Satellite:
-    def __init__(self, sbf_file):
-        self.sbf_file = sbf_file
+    def __init__(self, sbf_file=None):
+        self.sig_num_ref = pysbf.sig_num_ref
+        if sbf_file:
+            self.load_file(sbf_file)
+
+    def load_file(self, sbf_file):
+        self.sbf_file = Path(sbf_file)
         self.signals = {}
         self.events = {'tow': list()}
         self.dict_df = {'1': dict(), '2': dict()}
         self.means = {'1': list(), '2': list()}
-        self.sig_num_ref = pysbf.sig_num_ref
-        self.load_file(sbf_file)
-        self.to_dict_df()
-        self.update_sorted_mean_list(band='1')
-        self.update_sorted_mean_list(band='2')
-
-    def load_file(self, sbf_file):
-        sbf_file = Path(sbf_file)
         self.signals = {}
-        if sbf_file.is_file():
+        if self.sbf_file.is_file():
             with sbf_file.open() as sbf_fobj:
                 for blockName, block in pysbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent'}):
                     import pdb
@@ -39,6 +40,26 @@ class Satellite:
 
                     elif blockName == 'ExtEvent':
                         self.update_events(block['TOW'], block['WNc'])
+        self.to_dict_df()
+        self.update_sorted_mean_list(band='1')
+        self.update_sorted_mean_list(band='2')
+
+    def check(self):
+        len_top_1, val_top_1 = self.get_top_mean('1')
+        len_top_2, val_top_2 = self.get_top_mean('2')
+        checks = {
+            'Best sat. L1 [dB-Hz]': self.get_max_mean('1'),
+            'Best sat. L2 [dB-Hz]': self.get_max_mean('2'),
+            'Avg. of top L1 sat. [dB-Hz]': val_top_1,
+            'Len. of top L1 sat. [ ]': len_top_1,
+            'Avg. of top L2 sat. [dB-Hz]': val_top_2,
+            'Len. of top L2 sat. [ ]': len_top_2,
+            'Inop: n sat. over {} dB-Hz L1 []'.format(BEST_L1): self.get_n_thresh('1', BEST_L1),
+            'Inop: n sat. over {} dB-Hz L1 []'.format(GOOD_L1): self.get_n_thresh('1', GOOD_L1),
+            'Inop: n sat. over {} dB-Hz L2 []'.format(BEST_L2): self.get_n_thresh('2', BEST_L2),
+            'Inop: n sat. over {} dB-Hz L2 []'.format(GOOD_L2): self.get_n_thresh('2', GOOD_L2)
+        }
+        return str(self.sbf_file), checks
 
     def update_signals(self, tow, wnc, svid, sig_type, cn0, locktime):
         sig_num = self.get_band(sig_type)
@@ -102,8 +123,8 @@ class Satellite:
         length = MIN_LENGTH if len(self.means[band]) > MIN_LENGTH else len(self.means[band])
         return length, mean(self.means[band][:length])
 
-    def get_n_thresh(self, means, threshold):
-        return sum(i >= threshold for i in means)
+    def get_n_thresh(self, band, threshold):
+        return sum(i >= threshold for i in self.means[band])
 
     def update_events(self, tow, wnc):
         self.events['tow'].append(tow)
