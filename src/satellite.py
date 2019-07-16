@@ -16,20 +16,21 @@ GOOD_L2 = 30
 class Satellite:
     def __init__(self, sbf_file=None):
         self.sig_num_ref = pysbf.sig_num_ref
+        self.gain_num_ref = pysbf.gain_num_ref
         if sbf_file:
             self.load_file(sbf_file)
 
     def load_file(self, sbf_file):
         self.sbf_file = Path(sbf_file)
-        self.signals = {}
+        self.signals = dict()
+        self.gain_signals = dict()
         self.events = {'tow': list()}
         self.dict_df = {'1': dict(), '2': dict()}
         self.means = {'1': list(), '2': list()}
         self.signals = {}
         if self.sbf_file.is_file():
-            with sbf_file.open() as sbf_fobj:
-                for blockName, block in pysbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent'}):
-                    import pdb
+            with self.sbf_file.open() as sbf_fobj:
+                for blockName, block in pysbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent', 'ReceiverStatus_v2'}):
                     if blockName == 'MeasEpoch_v2':
                         for meas in block['Type_1']:
                             self.update_signals(block['TOW'], block['WNc'], meas['SVID'],
@@ -40,6 +41,9 @@ class Satellite:
 
                     elif blockName == 'ExtEvent':
                         self.update_events(block['TOW'], block['WNc'])
+                    elif blockName == 'ReceiverStatus_v2':
+                        for meas in block['AGCData']:
+                            self.update_gain(block['TOW'], block['WNc'], meas['FrontendID'], meas['Gain'])
         self.to_dict_df()
         self.update_sorted_mean_list(band='1')
         self.update_sorted_mean_list(band='2')
@@ -66,15 +70,22 @@ class Satellite:
         svid_offset = self.get_svid(svid)
         snr = self.get_snr(cn0, sig_num)
         if not sig_num in self.signals.keys():
-            self.signals[sig_num] = {}
+            self.signals[sig_num] = dict()
 
         if not svid_offset in self.signals[sig_num].keys():
             self.signals[sig_num][svid_offset] = {
-                'snr': [],
-                'tow': []
+                'snr': list(),
+                'tow': list()
             }
         self.signals[sig_num][svid_offset]['snr'].append(snr)
         self.signals[sig_num][svid_offset]['tow'].append(tow)
+
+    def update_gain(self, tow, wnc, frontend_id, gain):
+        sig_num = self.get_band(frontend_id)
+        if not sig_num in self.gain_signals.keys():
+            self.gain_signals[sig_num] = {'tow': list(), 'gain': list()}
+        self.gain_signals[sig_num]['tow'].append(tow)
+        self.gain_signals[sig_num]['gain'].append(gain)
 
     def to_dict_df(self):
         for num in self.signals:

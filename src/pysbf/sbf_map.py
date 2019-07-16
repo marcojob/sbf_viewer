@@ -1,5 +1,5 @@
-#L1: 1575.42 MHz, L2: 1227.60 MHz, L3: 1381.05 MHz, L5: 1176.45 MHz
-#From AsteRx-m2 reference guide table 4.1.10
+# L1: 1575.42 MHz, L2: 1227.60 MHz, L3: 1381.05 MHz, L5: 1176.45 MHz
+# From AsteRx-m2 reference guide table 4.1.10
 sig_num_ref = {
     0: {"sig_type": "L1CA", "constellation": "GPS", "band": 1, "en": True},
     1: {"sig_type": "L1P", "constellation": "GPS", "band": 1, "en": False},
@@ -33,4 +33,20 @@ sig_num_ref = {
     29: {"sig_type": "B2", "constellation": "BeiDou", "band": 7, "en": False},
     30: {"sig_type": "B3", "constellation": "BeiDou", "band": 6, "en": False},
     31: {"sig_type": "Reserved", "constellation": "", "band": 0, "en": False}
+}
+# From AsteRx-m2 reference guide definition 4.2.15 Status Blocks
+gain_num_ref = {
+    0: {"sig_type": "GPSL1/E1", "en": True},
+    1: {"sig_type": "GLOL1", "en": True},
+    2: {"sig_type": "E6", "en": False},
+    3: {"sig_type": "GPSL2", "en": True},
+    4: {"sig_type": "GLOL2", "en": True},
+    5: {"sig_type": "L5/E5a", "en": False},
+    6: {"sig_type": "E5b/B2", "en": False},
+    7: {"sig_type": "E5(a+b)", "en": False},
+    8: {"sig_type": "Combined GPS/GLONASS/SBAS/Galileo L1", "en": True},
+    9: {"sig_type": "Combined GPS/GLONASS L2", "en": True},
+    10: {"sig_type": "MSS/L-Band", "en": False},
+    11: {"sig_type": "B1", "en": False},
+    12: {"sig_type": "B3", "en": False}
 }
