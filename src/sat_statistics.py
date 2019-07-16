@@ -16,7 +16,7 @@ def run(directory):
         print('Processing {}'.format(str(file)))
         satellite.load_file(file)
         idx, values = satellite.check()
-        data = data.append(pd.DataFrame(data=values, index=[idx]))
+        data = data.append(pd.DataFrame(data=values, index=[idx]), sort=True)
     print('Processed files in {:.2f} s'.format(time.time()-starttime))
     csv_file = current_directory / Path('ppk_quality_output.csv')
     data.to_csv(csv_file)
