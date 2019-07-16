@@ -28,6 +28,8 @@ class Satellite:
         self.dict_df = {'1': dict(), '2': dict()}
         self.means = {'1': list(), '2': list()}
         self.signals = {}
+        self.mission_min_tow = 0.0
+        self.mission_max_tow = 0.0
         if self.sbf_file.is_file():
             with self.sbf_file.open() as sbf_fobj:
                 for blockName, block in pysbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent', 'ReceiverStatus_v2'}):
@@ -61,7 +63,8 @@ class Satellite:
             'Inop: n sat. over {} dB-Hz L1 []'.format(BEST_L1): self.get_n_thresh('1', BEST_L1),
             'Inop: n sat. over {} dB-Hz L1 []'.format(GOOD_L1): self.get_n_thresh('1', GOOD_L1),
             'Inop: n sat. over {} dB-Hz L2 []'.format(BEST_L2): self.get_n_thresh('2', BEST_L2),
-            'Inop: n sat. over {} dB-Hz L2 []'.format(GOOD_L2): self.get_n_thresh('2', GOOD_L2)
+            'Inop: n sat. over {} dB-Hz L2 []'.format(GOOD_L2): self.get_n_thresh('2', GOOD_L2),
+            'Mission duration [min]': self.get_mission_duration()
         }
         checks = self.checks_gain(checks)
         return str(self.sbf_file), checks
@@ -86,6 +89,10 @@ class Satellite:
             }
         self.signals[sig_num][svid_offset]['snr'].append(snr)
         self.signals[sig_num][svid_offset]['tow'].append(tow)
+        if tow < self.mission_min_tow:
+            self.mission_min_tow = tow
+        if tow > self.mission_max_tow:
+            self.mission_max_tow = tow
 
     def update_gain(self, tow, wnc, frontend_id, gain):
         sig_num = self.get_band(frontend_id)
@@ -157,6 +164,9 @@ class Satellite:
             return cn0*0.25
         else:
             return cn0*0.25+10.0
+
+    def get_mission_duration(self):
+        return round((self.mission_max_tow-self.mission_min_tow) / (60. * 1.0e6))
 
     def get_svid(self, svid):
         '''Table 4.1.9'''

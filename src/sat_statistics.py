@@ -25,7 +25,7 @@ def log_files(directory):
     extensions = ['*.sbf']
     for extension in extensions:
         for file in directory.glob(r'**/{}'.format(extension)):
-            if str('/.') not in str(file):  # Ignore hidden folders
+            if str('/.') not in str(file) and not 'Base' in str(file) and not 'ForwardProcessed' in str(file):  # Ignore hidden folders
                 yield file
 
 def get_valid_directory(directory):
