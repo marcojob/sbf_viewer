@@ -9,9 +9,6 @@ from src.gui import run_GUI
 from src.satellite import Satellite
 from src import sat_statistics
 
-import time
-
-
 def main():
     parser = ArgumentParser(description='Tool used to analyse sbf files')
     parser.add_argument('sbf_file',
@@ -25,9 +22,7 @@ def main():
     args = parser.parse_args()
 
     if not args.batch_processing:
-        starttime = time.time()
         satellite = Satellite(args.sbf_file)
-        print('Loaded file in {:.2f} s'.format(time.time()-starttime))
         run_GUI(satellite)
     else:
         sat_statistics.run(args.batch_processing)

@@ -63,7 +63,14 @@ class Satellite:
             'Inop: n sat. over {} dB-Hz L2 []'.format(BEST_L2): self.get_n_thresh('2', BEST_L2),
             'Inop: n sat. over {} dB-Hz L2 []'.format(GOOD_L2): self.get_n_thresh('2', GOOD_L2)
         }
+        checks = self.checks_gain(checks)
         return str(self.sbf_file), checks
+
+    def checks_gain(self, checks):
+        for sig_num in self.gain_signals.keys():
+            col_str = 'Frontend gain avg: {}'.format(self.gain_num_ref[sig_num]['sig_type'])
+            checks[col_str] = mean(self.gain_signals[sig_num]['gain'])
+        return checks
 
     def update_signals(self, tow, wnc, svid, sig_type, cn0, locktime):
         sig_num = self.get_band(sig_type)
@@ -82,6 +89,8 @@ class Satellite:
 
     def update_gain(self, tow, wnc, frontend_id, gain):
         sig_num = self.get_band(frontend_id)
+        if not self.gain_num_ref[sig_num]['en']:
+            return
         if not sig_num in self.gain_signals.keys():
             self.gain_signals[sig_num] = {'tow': list(), 'gain': list()}
         self.gain_signals[sig_num]['tow'].append(tow)

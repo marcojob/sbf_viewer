@@ -1,6 +1,7 @@
 import logging
 
 import pandas as pd
+import time
 
 from pathlib import Path
 from .satellite import Satellite
@@ -9,11 +10,14 @@ def run(directory):
     satellite = Satellite()
     current_directory = get_valid_directory(directory)
     data = pd.DataFrame()
-    for file in log_files(current_directory):
+    files = log_files(current_directory)
+    starttime = time.time()
+    for file in files:
         print('Processing {}'.format(str(file)))
         satellite.load_file(file)
         idx, values = satellite.check()
         data = data.append(pd.DataFrame(data=values, index=[idx]))
+    print('Processed files in {:.2f} s'.format(time.time()-starttime))
     csv_file = current_directory / Path('ppk_quality_output.csv')
     data.to_csv(csv_file)
 
