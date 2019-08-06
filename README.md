@@ -20,6 +20,6 @@ To build the cython code, run: `python setup.py build_ext --inplace`
 To view a sbf file just run `python sbf_viewer.py <path_to_sbf_file>`
 
 #### Batch processing:
-To batch process a folder of files use: `python sbf_viewer.py -b <path_to_folder>
+To batch process a folder of files use: `python sbf_viewer.py -b <path_to_folder>` 
 
 [1]: https://github.com/jashandeep-sohi/pysbf
