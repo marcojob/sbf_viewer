@@ -1,4 +1,5 @@
 from . import pysbf
+from .pysbf import sbf
 import matplotlib.pyplot as plt
 
 from pathlib import Path
@@ -32,7 +33,7 @@ class Satellite:
         self.mission_max_tow = 0.0
         if self.sbf_file.is_file():
             with self.sbf_file.open() as sbf_fobj:
-                for blockName, block in pysbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent', 'ReceiverStatus_v2'}):
+                for blockName, block in sbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent', 'ReceiverStatus_v2'}):
                     if blockName == 'MeasEpoch_v2':
                         for meas in block['Type_1']:
                             self.update_signals(block['TOW'], block['WNc'], meas['SVID'],
