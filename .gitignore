@@ -1,7 +1,7 @@
 # Cython build files
 *.c
+!/src/pysbf/c_crc.c
 *.pyc
 *.so
 /build/*
 /__pycache__/*
-/pysbf/__pycache__/*
