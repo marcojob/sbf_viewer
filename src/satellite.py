@@ -1,5 +1,5 @@
 from . import pysbf
-from .pysbf import sbf
+from pysbf import sbf
 import matplotlib.pyplot as plt
 
 from pathlib import Path
