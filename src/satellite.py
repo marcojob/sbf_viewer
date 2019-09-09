@@ -1,9 +1,10 @@
-from . import pysbf
-import matplotlib.pyplot as plt
-
+from pysbf import sbf
 from pathlib import Path
 from numpy import mean
+from .sbf_map import sig_num_ref, gain_num_ref
+
 import pandas as pd
+import matplotlib.pyplot as plt
 
 DEFAULT_VALUE = 'N/A'
 MIN_LENGTH = 7
@@ -15,8 +16,8 @@ GOOD_L2 = 30
 
 class Satellite:
     def __init__(self, sbf_file=None):
-        self.sig_num_ref = pysbf.sig_num_ref
-        self.gain_num_ref = pysbf.gain_num_ref
+        self.sig_num_ref = sig_num_ref
+        self.gain_num_ref = gain_num_ref
         if sbf_file:
             self.load_file(sbf_file)
 
@@ -32,7 +33,7 @@ class Satellite:
         self.mission_max_tow = 0.0
         if self.sbf_file.is_file():
             with self.sbf_file.open() as sbf_fobj:
-                for blockName, block in pysbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent', 'ReceiverStatus_v2'}):
+                for blockName, block in sbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent', 'ReceiverStatus_v2'}):
                     if blockName == 'MeasEpoch_v2':
                         for meas in block['Type_1']:
                             self.update_signals(block['TOW'], block['WNc'], meas['SVID'],
