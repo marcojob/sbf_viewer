@@ -1,10 +1,10 @@
-from . import pysbf
 from pysbf import sbf
-import matplotlib.pyplot as plt
-
 from pathlib import Path
 from numpy import mean
+from .sbf_map import sig_num_ref, gain_num_ref
+
 import pandas as pd
+import matplotlib.pyplot as plt
 
 DEFAULT_VALUE = 'N/A'
 MIN_LENGTH = 7
@@ -16,8 +16,8 @@ GOOD_L2 = 30
 
 class Satellite:
     def __init__(self, sbf_file=None):
-        self.sig_num_ref = pysbf.sig_num_ref
-        self.gain_num_ref = pysbf.gain_num_ref
+        self.sig_num_ref = sig_num_ref
+        self.gain_num_ref = gain_num_ref
         if sbf_file:
             self.load_file(sbf_file)
 
