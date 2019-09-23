@@ -21,6 +21,14 @@ def run(directory):
     csv_file = current_directory / Path('ppk_quality_output.csv')
     data.to_csv(csv_file)
 
+def event_run(file):
+    satellite = Satellite()
+    satellite.load_file(Path(file))
+    data = pd.DataFrame(data=satellite.events['tow'], columns=['tow'])
+    data['diff [ms]'] = data['tow'] - data['tow'].shift( 1)
+    csv_file = Path(file).parent / Path('events.csv')
+    data.to_csv(csv_file)
+
 def log_files(directory):
     extensions = ['*.sbf']
     for extension in extensions:
