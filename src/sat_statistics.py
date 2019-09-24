@@ -33,7 +33,7 @@ def event_run(file):
     data = pd.DataFrame()
 
     events_cmded = list()
-    ulog_folder = Path(file).parents[1]
+    ulog_folder = Path(file).parent
     for ulog_file in ulog_files(ulog_folder):
         print('processing {}'.format(ulog_file))
         try:
