@@ -1,0 +1,6 @@
+matplotlib
+PyQt5
+numpy
+pandas
+git+ssh://git@github.com/wingtra/pyulog
+git+ssh://git@github.com/marcojob/pysbf
