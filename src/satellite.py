@@ -155,8 +155,7 @@ class Satellite:
         return sum(i >= threshold for i in self.means[band])
 
     def update_events(self, tow, wnc):
-        if not len(self.events['tow']) > 0 or not tow == self.events['tow'][-1]:
-            self.events['tow'].append(tow)
+        self.events['tow'].append(tow)
 
     def get_band(self, sig_type):
         return sig_type & 0b00011111
