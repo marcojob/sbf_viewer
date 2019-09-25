@@ -29,6 +29,7 @@ def event_run(file):
     TRIG_DET_DIF_STR = 'trigger detected diff [ms]'
     TRIG_CMD_STR = 'trigger commanded [ms]'
     TRIG_CMD_DIF_STR = 'trigger commanded diff [ms]'
+    TRIG_DET_CMD_DIFF = 'trigger detected commanded delta [ms]'
     csv_file = Path(file).parent / Path('events.csv')
     data = pd.DataFrame()
 
@@ -56,6 +57,7 @@ def event_run(file):
     satellite.load_file(Path(file))
     data[TRIG_DET_STR] = pd.Series(satellite.events['tow'])
     data[TRIG_DET_DIF_STR] = abs(data[TRIG_DET_STR] - data[TRIG_DET_STR].shift(1))
+    data[TRIG_DET_CMD_DIFF] = abs(data[TRIG_DET_STR] - data[TRIG_CMD_STR])
 
     data.to_csv(csv_file)
 
