@@ -31,6 +31,7 @@ class Satellite:
         self.signals = {}
         self.mission_min_tow = 0.0
         self.mission_max_tow = 0.0
+        self.n_ext_events = 0
         if self.sbf_file.is_file():
             with self.sbf_file.open() as sbf_fobj:
                 for blockName, block in sbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent', 'ReceiverStatus_v2'}):
@@ -44,6 +45,7 @@ class Satellite:
 
                     elif blockName == 'ExtEvent':
                         self.update_events(block['TOW'], block['WNc'])
+                        self.n_ext_events = self.n_ext_events + 1
                     elif blockName == 'ReceiverStatus_v2':
                         for meas in block['AGCData']:
                             self.update_gain(block['TOW'], block['WNc'], meas['FrontendID'], meas['Gain'])
@@ -65,6 +67,7 @@ class Satellite:
             'Inop: n sat. over {} dB-Hz L1 []'.format(GOOD_L1): self.get_n_thresh('1', GOOD_L1),
             'Inop: n sat. over {} dB-Hz L2 []'.format(BEST_L2): self.get_n_thresh('2', BEST_L2),
             'Inop: n sat. over {} dB-Hz L2 []'.format(GOOD_L2): self.get_n_thresh('2', GOOD_L2),
+            'Num. of ExtEvent': self.n_ext_events,
             'Mission duration [min]': self.get_mission_duration()
         }
         checks = self.checks_gain(checks)
