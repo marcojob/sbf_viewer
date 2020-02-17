@@ -32,7 +32,7 @@ def get_valid_directory(directory):
     current_directory = Path(r'{}'.format(directory))
 
     if not current_directory.exists():
-        logger.error('Error: Given directory does not exist')
+        print('Error: Given directory does not exist')
         return None
 
     if current_directory.is_file():
