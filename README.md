@@ -13,6 +13,10 @@ Features of this are at the moment:
  * PyQt5
  * Cython
 
+ To install them, type
+
+ `pip install -r requirements.txt`
+
 #### Cython compilation:
 To build the cython code, run: `python setup.py build_ext --inplace`
 
