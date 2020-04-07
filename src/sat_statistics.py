@@ -84,12 +84,17 @@ def get_telemetry_and_hw_version_per_plane():
 
 def add_info(df, info_dict):
     df['HW Ver'] = 'N/A'
+    df['Flight Day'] = 'N/A'
+    df['Plane ID'] = 'N/A'
     for folder_name in df.index:
-        match = re.match('.*/([0-9]{4})_.*', folder_name)
+        match = re.match('.*/(20[0-9]{6})_.*/([0-9]{4})_.*', folder_name)
         if match:
-            plane_id = match.group(1)
+            flight_day = match.group(1)
+            plane_id = match.group(2)
+            df.loc[folder_name, 'Flight Day'] = flight_day
+            df.loc[folder_name, 'Plane ID'] = plane_id
             if plane_id in info_dict.keys():
-                df.loc[folder_name, 'HW_VER'] = info_dict.get(plane_id)[0]
+                df.loc[folder_name, 'HW Ver'] = info_dict.get(plane_id)[0]
 
     return df
 
