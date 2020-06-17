@@ -14,6 +14,7 @@ import calendar
 
 matplotlib.use('Qt5Agg')
 
+DEFAULT_VALUE = 'N/A'
 
 class MplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
@@ -71,8 +72,9 @@ class DynamicMplCanvas(MplCanvas):
         max_val = sat.get_max_mean(band)
         self.axes.axhline(y=val, color='k', linewidth=1.0, linestyle='dashed', alpha=0.7)
         self.axes.axhline(y=max_val, color='k', linewidth=1.0, linestyle='dashed', alpha=0.7)
-        self.axes.set_title("Max: {:.2f}, mean of top {} sats: {:.2f}".format(
-            max_val, len_val, val), fontsize=10)
+        if not max_val == DEFAULT_VALUE:
+            self.axes.set_title("Max: {:.2f}, mean of top {} sats: {:.2f}".format(
+                max_val, len_val, val), fontsize=10)
 
     def update_figure(self, sat, band):
         dict_df = sat.dict_df[band]
@@ -84,7 +86,7 @@ class DynamicMplCanvas(MplCanvas):
                                 '.',
                                 markersize=4.5)
         self.axes.xaxis.set_major_formatter(md.DateFormatter("%H:%M:%S"))
-        self.axes.set_ylabel("SNR [dB-Hz]")
+        self.axes.set_ylabel("CNR [dB-Hz]")
         self.fig.autofmt_xdate()
 
     def get_time(self, wnc, tow_list):

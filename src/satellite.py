@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 DEFAULT_VALUE = 'N/A'
 MIN_LENGTH = 7
-BEST_L1 = 45
-GOOD_L1 = 42
+BEST_L1 = 43
+GOOD_L1 = 40
 BEST_L2 = 36
 GOOD_L2 = 30
 
@@ -18,11 +18,6 @@ class Satellite:
     def __init__(self, sbf_file=None):
         self.sig_num_ref = sig_num_ref
         self.gain_num_ref = gain_num_ref
-        if sbf_file:
-            self.load_file(sbf_file)
-
-    def load_file(self, sbf_file):
-        self.sbf_file = Path(sbf_file)
         self.signals = dict()
         self.gain_signals = dict()
         self.events = {'tow': list()}
@@ -32,6 +27,11 @@ class Satellite:
         self.mission_min_tow = 0.0
         self.mission_max_tow = 0.0
         self.n_ext_events = 0
+        if sbf_file:
+            self.load_file(sbf_file)
+
+    def load_file(self, sbf_file):
+        self.sbf_file = Path(sbf_file)
         if self.sbf_file.is_file():
             with self.sbf_file.open() as sbf_fobj:
                 for blockName, block in sbf.load(sbf_fobj, blocknames={'MeasEpoch_v2', 'ExtEvent', 'ReceiverStatus_v2'}):
