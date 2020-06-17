@@ -56,7 +56,7 @@ class DynamicMplCanvas(MplCanvas):
                                 markersize=4.5)
 
         self.axes.xaxis.set_major_formatter(md.DateFormatter("%H:%M:%S"))
-        self.axes.set_ylabel("SNR [dB-Hz]")
+        self.axes.set_ylabel("CNR [dB-Hz]")
         self.fig.autofmt_xdate()
 
         self.show_events(sat.events)
