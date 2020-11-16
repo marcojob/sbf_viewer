@@ -18,19 +18,22 @@ class Satellite:
     def __init__(self, sbf_file=None):
         self.sig_num_ref = sig_num_ref
         self.gain_num_ref = gain_num_ref
+        if sbf_file:
+            self.load_file(sbf_file)
+
+    def load_file(self, sbf_file):
+        # Reset all counters
         self.signals = dict()
         self.gain_signals = dict()
         self.events = {'tow': list()}
         self.dict_df = {'1': dict(), '2': dict()}
         self.means = {'1': list(), '2': list()}
-        self.signals = {}
         self.mission_min_tow = 0.0
         self.mission_max_tow = 0.0
         self.n_ext_events = 0
-        if sbf_file:
-            self.load_file(sbf_file)
 
-    def load_file(self, sbf_file):
+
+        # Process file
         self.sbf_file = Path(sbf_file)
         if self.sbf_file.is_file():
             with self.sbf_file.open() as sbf_fobj:
